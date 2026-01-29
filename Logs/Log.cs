@@ -30,6 +30,12 @@ namespace Logs
             set => Instance().testData.TestProject = value;
         }
 
+        public static string Designer
+        {
+            get => Instance().testData.Designer;
+            set => Instance().testData.Designer = value;
+        }
+
         public static bool TestFinished { get; private set; } = false;
 
         private static Log Instance()
@@ -49,7 +55,8 @@ namespace Logs
                 TestDir = Environment.CurrentDirectory,
                 StartDateTime = DateTime.Now,
                 FinishDateTime = null,
-                TestStatus = Status.NotCompleted
+                TestStatus = Status.NotCompleted,
+                Tester = Environment.UserName
             };
         }
 
@@ -58,6 +65,7 @@ namespace Logs
             AddLogger(new TraceLogger());
             AddLogger(new ScreenshotLogger());
             AddLogger(new HtmlLogger());
+            AddLogger(new ElasticLogger());
         }
 
         private static void AddLogger(ILogger logger) => Instance().logEvent += logger.Log;
@@ -74,6 +82,8 @@ namespace Logs
                 StepStatus = Status.NotCompleted,
                 Number = Instance().nextStepNum++
             });
+
+            Instance().testData.EventCategory = MessageCategory.Step;
             Instance().logEvent?.Invoke(instance, Instance().testData);
         }
 
@@ -89,6 +99,7 @@ namespace Logs
                 Instance().testData.LastStep.StepStatus = Status.Passed;
             }
 
+            Instance().testData.EventCategory = MessageCategory.EndStep;
             Instance().logEvent?.Invoke(instance, Instance().testData);
         }
 
@@ -99,6 +110,7 @@ namespace Logs
         public static void Info(string message)
         {
             Instance().testData.LastStep.AddMessage(MessageCategory.Info, message);
+            Instance().testData.EventCategory = MessageCategory.Info;
             Instance().logEvent?.Invoke(instance, Instance().testData);
         }
 
@@ -109,6 +121,7 @@ namespace Logs
         {
             Instance().testData.LastStep.StepStatus = Status.Failed;
             Instance().testData.LastStep.AddMessage(MessageCategory.Error, message);
+            Instance().testData.EventCategory = MessageCategory.Error;
             Instance().logEvent?.Invoke(instance, Instance().testData);
             ScreenShot();
 
@@ -130,6 +143,7 @@ namespace Logs
             if (exception != null)
             {
                 Instance().testData.LastStep.AddMessage(MessageCategory.Exception, exception.ToString());
+                Instance().testData.EventCategory = MessageCategory.Exception;
                 Instance().logEvent?.Invoke(instance, Instance().testData);
                 if (exception.InnerException != null)
                 {
@@ -156,6 +170,7 @@ namespace Logs
             Instance().testData.FinishDateTime = DateTime.Now;
             TestFinished = true;
 
+            Instance().testData.EventCategory = MessageCategory.EndCase;
             Instance().logEvent?.Invoke(instance, Instance().testData);
 
             if (Instance().testData.TestStatus == Status.Failed)
@@ -180,6 +195,7 @@ namespace Logs
             string filePath = Path.Combine(Instance().testData.TestDir, fileName);
 
             Instance().testData.LastStep.AddMessage(MessageCategory.Screenshot, filePath);
+            Instance().testData.EventCategory = MessageCategory.Screenshot;
             Instance().logEvent?.Invoke(instance, Instance().testData);
         }
     }

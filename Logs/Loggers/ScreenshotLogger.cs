@@ -26,7 +26,7 @@ namespace Logs.Loggers
 
         public void Log(object sender, TestRunData data)
         {
-            if (data.LastStep.LastMessage?.MessageType == MessageCategory.Screenshot)
+            if (data.EventCategory == MessageCategory.Screenshot)
             {
                 using (Bitmap bitmap = new Bitmap(width, height))
                 {

@@ -18,6 +18,7 @@ namespace Tests
             Log.TestName = "TestName1";
             Log.TestDescription = "TestDescription1";
             Log.TestProject = "TestProject1";
+            Log.Designer = "user1";
         }
 
         [Test]

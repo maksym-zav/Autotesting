@@ -5,6 +5,9 @@
         Error,
         Info,
         Screenshot,
-        Exception
+        Exception,
+        Step,
+        EndStep,
+        EndCase,
     }
 }
